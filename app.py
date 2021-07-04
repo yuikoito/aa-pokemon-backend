@@ -5,16 +5,14 @@ import numpy as np
 import glob
 
 def calc_hue_hist(img):
-    # H（色相）S（）V 形式に変換する。
+    # H（色相）S（彩度）V （明度）形式に変換する。
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     #hsv = img
     # 成分ごとに分離する。
     h, s, v = cv2.split(hsv)
-    # 画像の画素値を計算したもの（ヒストグラムというらしい）
+    # 画像の画素値を計算したもの（ヒストグラム）
     h_hist = calc_hist(h)
-    s_hist = calc_hist(s)
-    v_hist = calc_hist(v)
-    return h_hist, s_hist, v_hist
+    return h_hist
 
 def calc_hist(img):
     # ヒストグラムを計算する。
@@ -43,7 +41,7 @@ def handler(event, context):
     input_img = event['img'] #画つ目の像を読み出しオブジェクトtrimed_imgに代入
     input_img = base64_to_cv2(input_img)
     height, width, channels = input_img.shape[:3]
-    # input_img = cv2.resize(input_img , (height / 2, width / 2))
+
     max_ruizido = 0
     tmp_num = 5
     crop_size = 15
@@ -55,15 +53,12 @@ def handler(event, context):
             trimed_img = input_img[crop_size*i : crop_size*(i+1), crop_size*j: crop_size*(j+1)]
             max_ruizido = -1
             tmp_num = 5
-            h_hist_2, s_hist_2, v_hist_2 = calc_hue_hist(trimed_img)
+            h_hist_2 = calc_hue_hist(trimed_img)
             for poke_name in poke_imgs:
                 poke_img = cv2.imread(poke_name) #画つ目の像を読み出しオブジェクトpoke_imgに代入
                 # 画像の Hue 成分のヒストグラムを取得する
-                h_hist_1, s_hist_1, v_hist_1 = calc_hue_hist(poke_img)
+                h_hist_1 = calc_hue_hist(poke_img)
                 h_comp_hist = cv2.compareHist(h_hist_1, h_hist_2, cv2.HISTCMP_CORREL)
-                s_comp_hist = cv2.compareHist(s_hist_1, s_hist_2, cv2.HISTCMP_CORREL)
-                v_comp_hist = cv2.compareHist(v_hist_1, v_hist_2, cv2.HISTCMP_CORREL)
-                comp_hist = np.mean([h_comp_hist*2, s_comp_hist, v_comp_hist])
                 if max_ruizido < h_comp_hist:
                     max_ruizido = h_comp_hist
                     tmp_num = poke_name
