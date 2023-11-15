@@ -16,7 +16,7 @@ RUN yum update -y \
     && yum clean all
 
 # Copy images to temp folder
-COPY images/ ${LAMBDA_TASK_ROOT}/pokemons/
+COPY pokemons/ ${LAMBDA_TASK_ROOT}/pokemons/
 
 # Copy requirements.txt
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
